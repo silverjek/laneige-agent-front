@@ -1,0 +1,11 @@
+/* Arita Dotum KR 폰트 적용 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
+
+/* Arita Dotum KR - Google Fonts에 없는 경우 유사 폰트 대체 */
+body {
+  font-family: 'Arita Dotum KR', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+* {
+  font-family: 'Arita Dotum KR', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
