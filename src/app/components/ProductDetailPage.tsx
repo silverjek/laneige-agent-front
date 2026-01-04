@@ -761,29 +761,167 @@ export function ProductDetailPage({
   };
 
   const exportToExcel = () => {
-    const worksheetData = [
-      ["Date", "BSR Rank", "Category Rank"],
-      ...filteredRankData.map((data) => [
-        data.date,
-        data.bsr,
-        data.category,
-      ]),
+    // ════════════════════════════════════════════════════════
+    // SHEET 1: 전체 성과 스냅샷 (Overview)
+    // ════════════════════════════════════════════════════════
+    const overviewData = [
+      // 최신 데이터가 가장 위에 오도록 내림차순 정렬
+      { year: 2026, month: 1, day: 4, hour: 15, totalCumulativeSales: 40689, netSales: 1245, rankConversionEfficiency: 0.85, trafficConversionEfficiency: 0.72, skuUpliftRatio: 18.5, upliftedSKUCount: 5 },
+      { year: 2026, month: 1, day: 4, hour: 14, totalCumulativeSales: 39444, netSales: 1198, rankConversionEfficiency: 0.83, trafficConversionEfficiency: 0.71, skuUpliftRatio: 16.2, upliftedSKUCount: 4 },
+      { year: 2026, month: 1, day: 4, hour: 13, totalCumulativeSales: 38246, netSales: 1156, rankConversionEfficiency: 0.84, trafficConversionEfficiency: 0.73, skuUpliftRatio: 17.1, upliftedSKUCount: 5 },
+      { year: 2026, month: 1, day: 4, hour: 12, totalCumulativeSales: 37090, netSales: 1089, rankConversionEfficiency: 0.82, trafficConversionEfficiency: 0.70, skuUpliftRatio: 15.8, upliftedSKUCount: 4 },
+      { year: 2026, month: 1, day: 4, hour: 11, totalCumulativeSales: 36001, netSales: 1134, rankConversionEfficiency: 0.86, trafficConversionEfficiency: 0.74, skuUpliftRatio: 19.2, upliftedSKUCount: 6 },
+      { year: 2026, month: 1, day: 4, hour: 10, totalCumulativeSales: 34867, netSales: 1067, rankConversionEfficiency: 0.81, trafficConversionEfficiency: 0.69, skuUpliftRatio: 14.5, upliftedSKUCount: 4 },
+      { year: 2026, month: 1, day: 4, hour: 9, totalCumulativeSales: 33800, netSales: 1223, rankConversionEfficiency: 0.87, trafficConversionEfficiency: 0.75, skuUpliftRatio: 20.3, upliftedSKUCount: 6 },
+      { year: 2026, month: 1, day: 4, hour: 8, totalCumulativeSales: 32577, netSales: 1045, rankConversionEfficiency: 0.80, trafficConversionEfficiency: 0.68, skuUpliftRatio: 13.7, upliftedSKUCount: 3 },
+      { year: 2026, month: 1, day: 4, hour: 7, totalCumulativeSales: 31532, netSales: 998, rankConversionEfficiency: 0.79, trafficConversionEfficiency: 0.67, skuUpliftRatio: 12.9, upliftedSKUCount: 3 },
+      { year: 2026, month: 1, day: 4, hour: 6, totalCumulativeSales: 30534, netSales: 1156, rankConversionEfficiency: 0.84, trafficConversionEfficiency: 0.72, skuUpliftRatio: 16.8, upliftedSKUCount: 5 },
+      { year: 2026, month: 1, day: 3, hour: 23, totalCumulativeSales: 29378, netSales: 876, rankConversionEfficiency: 0.76, trafficConversionEfficiency: 0.65, skuUpliftRatio: 11.2, upliftedSKUCount: 3 },
+      { year: 2026, month: 1, day: 3, hour: 22, totalCumulativeSales: 28502, netSales: 934, rankConversionEfficiency: 0.78, trafficConversionEfficiency: 0.66, skuUpliftRatio: 13.4, upliftedSKUCount: 4 },
     ];
 
-    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      "Rank Trend",
-    );
+    const sheet1Headers = [
+      'Year',
+      'Month',
+      'Day',
+      'Hour',
+      'Total Cumulative Sales',
+      'Net Sales',
+      'Rank Conversion Efficiency',
+      'Traffic Conversion Efficiency',
+      'SKU Uplift Ratio (%)',
+      'Uplifted SKU Count'
+    ];
 
-    const fileName = `RankTrend_${startDate || "All"}_${endDate || "All"}.xlsx`;
+    const sheet1Data = overviewData.map(row => [
+      row.year,
+      row.month,
+      row.day,
+      row.hour,
+      row.totalCumulativeSales,
+      row.netSales,
+      row.rankConversionEfficiency,
+      row.trafficConversionEfficiency,
+      row.skuUpliftRatio,
+      row.upliftedSKUCount
+    ]);
+
+    const sheet1 = XLSX.utils.aoa_to_sheet([sheet1Headers, ...sheet1Data]);
+    
+    // Apply filter to Sheet 1
+    sheet1['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: sheet1Headers.length - 1, r: sheet1Data.length } }) };
+
+    // ════════════════════════════════════════════════════════
+    // SHEET 2: SKU별 성과 히스토리 (SKU Performance)
+    // ════════════════════════════════════════════════════════
+    const skuPerformanceData = [
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 4, hour: 15, skuCumulativeSales: 5234, skuNetSales: 187, generalCategoryRank: 12, generalRankChange: -2, subCategoryRank: 3, subRankChange: -1 },
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 4, hour: 14, skuCumulativeSales: 5047, skuNetSales: 165, generalCategoryRank: 14, generalRankChange: 1, subCategoryRank: 4, subRankChange: 0 },
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 4, hour: 13, skuCumulativeSales: 4882, skuNetSales: 178, generalCategoryRank: 13, generalRankChange: -1, subCategoryRank: 4, subRankChange: 0 },
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 4, hour: 12, skuCumulativeSales: 4704, skuNetSales: 152, generalCategoryRank: 14, generalRankChange: 0, subCategoryRank: 4, subRankChange: 1 },
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 4, hour: 11, skuCumulativeSales: 4552, skuNetSales: 192, generalCategoryRank: 14, generalRankChange: -3, subCategoryRank: 3, subRankChange: -1 },
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 4, hour: 10, skuCumulativeSales: 4360, skuNetSales: 143, generalCategoryRank: 17, generalRankChange: 2, subCategoryRank: 4, subRankChange: 1 },
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 4, hour: 9, skuCumulativeSales: 4217, skuNetSales: 201, generalCategoryRank: 15, generalRankChange: -2, subCategoryRank: 3, subRankChange: -1 },
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 4, hour: 8, skuCumulativeSales: 4016, skuNetSales: 134, generalCategoryRank: 17, generalRankChange: 1, subCategoryRank: 4, subRankChange: 0 },
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 4, hour: 7, skuCumulativeSales: 3882, skuNetSales: 128, generalCategoryRank: 16, generalRankChange: 0, subCategoryRank: 4, subRankChange: 0 },
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 4, hour: 6, skuCumulativeSales: 3754, skuNetSales: 189, generalCategoryRank: 16, generalRankChange: -2, subCategoryRank: 4, subRankChange: -1 },
+    ];
+
+    const sheet2Headers = [
+      'SKU Name',
+      'ASIN',
+      'Year',
+      'Month',
+      'Day',
+      'Hour',
+      'SKU Cumulative Sales',
+      'SKU Net Sales',
+      'General Category Rank',
+      'General Rank Change',
+      'Sub Category Rank',
+      'Sub Rank Change'
+    ];
+
+    const sheet2Data = skuPerformanceData.map(row => [
+      row.skuName,
+      row.asin,
+      row.year,
+      row.month,
+      row.day,
+      row.hour,
+      row.skuCumulativeSales,
+      row.skuNetSales,
+      row.generalCategoryRank,
+      row.generalRankChange,
+      row.subCategoryRank,
+      row.subRankChange
+    ]);
+
+    const sheet2 = XLSX.utils.aoa_to_sheet([sheet2Headers, ...sheet2Data]);
+    
+    // Apply filter to Sheet 2
+    sheet2['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: sheet2Headers.length - 1, r: sheet2Data.length } }) };
+
+    // ════════════════════════════════════════════════════════
+    // SHEET 3: SKU별 월간 리뷰 분포 (Monthly Review Distribution)
+    // ════════════════════════════════════════════════════════
+    const reviewDistributionData = [
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 4, rating5Ratio: 78.2, rating4Ratio: 16.5, rating3Ratio: 3.1, rating2Ratio: 1.4, rating1Ratio: 0.8 },
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 3, rating5Ratio: 78.0, rating4Ratio: 16.7, rating3Ratio: 3.2, rating2Ratio: 1.3, rating1Ratio: 0.8 },
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 2, rating5Ratio: 77.8, rating4Ratio: 16.9, rating3Ratio: 3.1, rating2Ratio: 1.4, rating1Ratio: 0.8 },
+      { skuName: productName, asin: asin, year: 2026, month: 1, day: 1, rating5Ratio: 77.5, rating4Ratio: 17.0, rating3Ratio: 3.3, rating2Ratio: 1.4, rating1Ratio: 0.8 },
+      { skuName: productName, asin: asin, year: 2025, month: 12, day: 31, rating5Ratio: 77.3, rating4Ratio: 17.2, rating3Ratio: 3.2, rating2Ratio: 1.5, rating1Ratio: 0.8 },
+      { skuName: productName, asin: asin, year: 2025, month: 12, day: 30, rating5Ratio: 77.1, rating4Ratio: 17.3, rating3Ratio: 3.3, rating2Ratio: 1.5, rating1Ratio: 0.8 },
+      { skuName: productName, asin: asin, year: 2025, month: 12, day: 29, rating5Ratio: 76.9, rating4Ratio: 17.4, rating3Ratio: 3.4, rating2Ratio: 1.5, rating1Ratio: 0.8 },
+      { skuName: productName, asin: asin, year: 2025, month: 12, day: 28, rating5Ratio: 76.7, rating4Ratio: 17.5, rating3Ratio: 3.4, rating2Ratio: 1.6, rating1Ratio: 0.8 },
+    ];
+
+    const sheet3Headers = [
+      'SKU Name',
+      'ASIN',
+      'Year',
+      'Month',
+      'Day',
+      'Rating 5 Ratio (%)',
+      'Rating 4 Ratio (%)',
+      'Rating 3 Ratio (%)',
+      'Rating 2 Ratio (%)',
+      'Rating 1 Ratio (%)'
+    ];
+
+    const sheet3Data = reviewDistributionData.map(row => [
+      row.skuName,
+      row.asin,
+      row.year,
+      row.month,
+      row.day,
+      row.rating5Ratio,
+      row.rating4Ratio,
+      row.rating3Ratio,
+      row.rating2Ratio,
+      row.rating1Ratio
+    ]);
+
+    const sheet3 = XLSX.utils.aoa_to_sheet([sheet3Headers, ...sheet3Data]);
+    
+    // Apply filter to Sheet 3
+    sheet3['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: sheet3Headers.length - 1, r: sheet3Data.length } }) };
+
+    // ════════════════════════════════════════════════════════
+    // Create Workbook and Append All Sheets
+    // ════════════════════════════════════════════════════════
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, sheet1, 'Overview');
+    XLSX.utils.book_append_sheet(workbook, sheet2, 'SKU Performance');
+    XLSX.utils.book_append_sheet(workbook, sheet3, 'Reviews');
+
+    // Generate filename with current date
+    const fileName = `LANEIGE_Analytics_${productName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(workbook, fileName);
 
     setShowExportModal(false);
-    setStartDate("");
-    setEndDate("");
+    setStartDate('');
+    setEndDate('');
   };
 
   return (
@@ -1294,93 +1432,38 @@ export function ProductDetailPage({
                 <div className="space-y-5 flex-1 overflow-y-auto pr-2 custom-scrollbar">
                   <div>
                     <div className="text-sm text-gray-900 mb-2">
-                      What worked:
+                      What Worked:
                     </div>
                     <p className="text-sm text-gray-600 leading-relaxed">
-                      15% coupon activation on Feb 13 drove rank
-                      spike. BSR improved by 18 positions within
-                      3 days. Discount campaign contributed 73%
-                      of upward movement. The promotional
-                      strategy aligned perfectly with seasonal
-                      demand patterns, resulting in a sustained
-                      increase in organic visibility.
+                      Laneige Lip Sleeping Mask는 전일 대비 누적 판매량이 안정적으로 증가하며, General 카테고리 기준 랭킹이 8위 상승하는 성과를 기록하였습니다. 이는 단기적인 노출 증가가 아닌, 실제 구매 전환으로 이어진 랭킹 개선으로 해석됩니다.
                     </p>
                     <p className="text-sm text-gray-600 leading-relaxed mt-3">
-                      Enhanced A+ content update on Feb 10 led
-                      to a 12% increase in conversion rate.
-                      Product imagery refresh and lifestyle
-                      photos resonated well with target audience
-                      demographics. Customer reviews highlighted
-                      improved product presentation as a key
-                      factor in purchase decisions.
+                      Rank Conversion Efficiency가 평균 대비 높은 수준을 유지하고 있어, 랭킹 상승이 매출 증가로 효과적으로 연결되고 있음을 확인할 수 있습니다. 특히 16시 이후 시간대에서 판매 증가 폭이 두드러져, 주요 타겟 고객의 구매 패턴과 잘 부합하는 흐름을 보이고 있습니다.
                     </p>
                     <p className="text-sm text-gray-600 leading-relaxed mt-3">
-                      Lightning deal participation on Feb 18
-                      generated significant traffic surge. Deal
-                      exposure resulted in 250+ units sold
-                      within 6 hours, pushing rank up by 8
-                      positions. Post-deal velocity maintained
-                      elevated sales pattern for 4 days.
+                      리뷰 측면에서도 긍정적인 흐름이 유지되고 있습니다. 월별 리뷰 데이터 기준으로 4~5점 리뷰 비중이 압도적으로 높게 유지되고 있으며, hydration, overnight care, lip repair 관련 키워드가 반복적으로 언급되고 있습니다. 이는 제품의 핵심 효익이 명확하게 전달되고 있음을 시사합니다.
+                    </p>
+                    <p className="text-sm text-gray-600 leading-relaxed mt-3">
+                      Sub 카테고리 기준 랭킹 또한 상위권을 안정적으로 유지하고 있어, 립케어 카테고리 내에서의 경쟁력이 강화되고 있는 것으로 판단됩니다.
                     </p>
                   </div>
 
                   <div>
                     <div className="text-sm text-gray-900 mb-2">
-                      What's next:
+                      What's Next:
                     </div>
-                    <ul className="space-y-2">
-                      <li className="flex items-start gap-2 text-sm text-gray-600">
-                        <span className="text-[#2F6FE4] mt-1">
-                          •
-                        </span>
-                        <span>
-                          Consider repeating promotional
-                          strategy in Q2 with emphasis on
-                          weekend timing to capture higher
-                          consumer traffic patterns
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2 text-sm text-gray-600">
-                        <span className="text-[#2F6FE4] mt-1">
-                          •
-                        </span>
-                        <span>
-                          Monitor competitor pricing and
-                          maintain stock levels above 200 units
-                          to avoid out-of-stock penalties
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2 text-sm text-gray-600">
-                        <span className="text-[#2F6FE4] mt-1">
-                          •
-                        </span>
-                        <span>
-                          Optimize PPC campaigns by increasing
-                          bid for high-performing keywords
-                          identified during promotion period
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2 text-sm text-gray-600">
-                        <span className="text-[#2F6FE4] mt-1">
-                          •
-                        </span>
-                        <span>
-                          Request early reviewer program
-                          participation for newly launched
-                          variants to build initial social proof
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2 text-sm text-gray-600">
-                        <span className="text-[#2F6FE4] mt-1">
-                          •
-                        </span>
-                        <span>
-                          Analyze conversion funnel drop-off
-                          points and implement A/B testing for
-                          product title and bullet points
-                        </span>
-                      </li>
-                    </ul>
+                    <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                      현재 Traffic Conversion Efficiency는 소폭 하락하는 흐름을 보여, 유입 대비 구매 전환 최적화가 다음 과제로 판단됩니다. 특히 모바일 상세페이지에서의 콘텐츠 가독성 및 핵심 효익 전달 구조에 대한 점검이 필요합니다.
+                    </p>
+                    <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                      단기적으로는 Before/After 이미지 강화, 사용 시점(overnight care) 강조 콘텐츠 보완, 상위 리뷰 문구를 활용한 A+ Content 개선이 효과적인 대응 방안으로 예상됩니다.
+                    </p>
+                    <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                      또한, 립케어 제품 특성상 재구매 주기가 비교적 짧은 편이므로 Subscribe & Save 옵션 노출 강화 또는 소용량 번들 구성을 통해 반복 구매 전환을 유도하는 전략이 유효할 것으로 판단됩니다.
+                    </p>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      향후 시즌성 수요 확대 구간(건조 시즌, 기프트 시즌)을 대비해 쿠폰 기반 프로모션 시점 테스트를 병행한다면, 현재의 랭킹 모멘텀을 유지하며 추가적인 매출 상승을 기대할 수 있습니다.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1753,10 +1836,10 @@ export function ProductDetailPage({
       {/* Export Modal */}
       {showExportModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-6 w-[400px]">
-            <div className="flex items-center justify-between mb-5">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-[480px]">
+            <div className="flex items-center justify-between mb-4">
               <h5 className="text-lg font-semibold text-gray-900">
-                Export Data
+                Export Analytics Data
               </h5>
               <button
                 onClick={() => setShowExportModal(false)}
@@ -1766,10 +1849,25 @@ export function ProductDetailPage({
               </button>
             </div>
 
+            {/* Description */}
+            <div className="mb-5 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 text-[#2F6FE4] mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-gray-700">
+                  <p className="font-medium mb-1">Export includes 3 filterable sheets:</p>
+                  <ul className="space-y-0.5 ml-1">
+                    <li>• <span className="font-medium">Overview</span> - Brand-level performance by time</li>
+                    <li>• <span className="font-medium">SKU Performance</span> - SKU-specific sales & ranking history</li>
+                    <li>• <span className="font-medium">Reviews</span> - Monthly review distribution analysis</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-sm text-gray-600 mb-2">
-                  Start Date
+                  Start Date (Optional)
                 </label>
                 <input
                   type="date"
@@ -1780,7 +1878,7 @@ export function ProductDetailPage({
               </div>
               <div>
                 <label className="block text-sm text-gray-600 mb-2">
-                  End Date
+                  End Date (Optional)
                 </label>
                 <input
                   type="date"
@@ -1803,7 +1901,7 @@ export function ProductDetailPage({
                 className="flex items-center gap-2 px-4 py-2 bg-[#2F6FE4] text-white text-sm rounded-lg hover:bg-[#2557b8] transition-colors"
               >
                 <FileSpreadsheet className="w-4 h-4" />
-                <span>Export</span>
+                <span>Export to Excel</span>
               </button>
             </div>
           </div>
